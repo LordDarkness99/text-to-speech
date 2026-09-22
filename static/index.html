@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeechT5 Studio | Neural Text-to-Speech Web App</title>
+  <meta name="description" content="Aplikasi web interaktif Text-to-Speech bertenaga model fine-tuned SpeechT5 LJSpeech checkpoint-4000 dengan neural vocoder HiFi-GAN.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-wrapper">
+    <!-- Navbar Header -->
+    <header class="studio-header">
+      <div class="header-left">
+        <!-- Hamburger Sidebar Toggle -->
+        <button id="hamburgerBtn" class="hamburger-btn" title="Tampilkan / Sembunyikan Panel Input (H)">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="brand-logo">
+          <div class="wave-icon">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="brand-text">
+            <h1>SpeechT5 <span>Studio</span></h1>
+            <span class="brand-tag">LJSpeech 4K Checkpoint</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="header-nav">
+        <button id="navStudioBtn" class="nav-btn active" data-tab="studio">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          Studio
+        </button>
+        <button id="navInsightsBtn" class="nav-btn" data-tab="insights">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          Model Insights
+        </button>
+        <a href="/docs" target="_blank" class="nav-btn nav-link" title="Buka Dokumentasi Swagger API">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          API Docs
+        </a>
+      </nav>
+
+      <div class="header-right">
+        <div id="systemBadge" class="status-badge standby">
+          <span class="status-dot"></span>
+          <span id="systemStatusText">Memeriksa Model...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+
+      <!-- TAB 1: STUDIO SYNTHESIZER -->
+      <section id="studioTab" class="tab-pane active">
+        <!-- Collapsed sidebar quick-synthesize button (visible when sidebar is hidden) -->
+        <div id="collapsedSidebarBar" class="collapsed-sidebar-bar hidden">
+          <div class="collapsed-meta" id="collapsedMeta">SpeechT5 Studio · Sidebar tersembunyi</div>
+          <button id="collapsedSynthBtn" class="primary-btn collapsed-synth-btn" title="Sintesis dengan teks saat ini">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Sintesis Suara
+          </button>
+        </div>
+        <div class="studio-grid" id="studioGrid">
+          
+          <!-- Left Column: Input & Controls -->
+          <div class="studio-card input-card">
+            <div class="card-header">
+              <div class="title-with-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <h2>Teks Input</h2>
+              </div>
+              <div class="counter-badge" id="charCounter">0 / 500 karakter</div>
+            </div>
+
+            <!-- Preset prompts chips -->
+            <div class="preset-prompts-container">
+              <span class="preset-label">Contoh Teks:</span>
+              <div class="prompt-chips">
+                <button class="chip" data-prompt="Machine learning architectures are fascinating to build.">ML Architecture</button>
+                <button class="chip" data-prompt="The architecture of machine learning models requires careful tuning and evaluation. After thousands of steps, the model should be able to speak fluently without stopping prematurely.">Evaluasi LJSpeech</button>
+                <button class="chip" data-prompt="Speech synthesis has transformed human-computer interaction with natural intonation.">Speech AI</button>
+                <button class="chip" data-prompt="Welcome to SpeechT5 studio. How can artificial intelligence assist your voice project today?">Welcome Voice</button>
+              </div>
+            </div>
+
+            <!-- Text Area -->
+            <div class="textarea-wrapper">
+              <textarea 
+                id="ttsTextInput" 
+                placeholder="Ketik atau tempel teks bahasa Inggris di sini untuk disintesis menjadi suara..."
+                maxlength="500"
+                rows="5"
+              >The architecture of machine learning models requires careful tuning and evaluation. After thousands of steps, the model should be able to speak fluently without stopping prematurely.</textarea>
+              <div class="textarea-actions">
+                <button id="clearTextBtn" class="icon-action-btn" title="Hapus teks">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Voice Selection Grid -->
+            <div class="section-group">
+              <div class="section-title-bar">
+                <h3>Pilih Karakter Suara</h3>
+                <span class="subtext">Speaker Embedding 512-dim</span>
+              </div>
+              <div class="voice-cards-grid" id="voicePresetsContainer">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Advanced Parameters Accordion -->
+            <div class="accordion-item" id="advancedAccordion">
+              <button class="accordion-header" id="accordionToggle">
+                <div class="accordion-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                  Pengaturan Lanjutan (Seed & Kecepatan)
+                </div>
+                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              
+              <div class="accordion-content" id="accordionBody">
+                <div class="params-grid">
+                  <div class="param-control">
+                    <div class="param-label-row">
+                      <label for="customSeedInput">Custom Voice Seed</label>
+                      <button id="randomSeedBtn" class="text-action-btn" title="Buat angka acak">
+                        🎲 Acak Seed
+                      </button>
+                    </div>
+                    <input type="number" id="customSeedInput" placeholder="Contoh: 42, 105, 777..." min="1" max="999999" value="42">
+                    <span class="param-hint">Menghasilkan variasi karakter vokal yang konsisten.</span>
+                  </div>
+
+                  <div class="param-control">
+                    <div class="param-label-row">
+                      <label for="speedSlider">Kecepatan Bicara</label>
+                      <span class="param-value" id="speedValueDisplay">1.0x</span>
+                    </div>
+                    <div class="slider-row">
+                      <span class="slider-min">0.75x</span>
+                      <input type="range" id="speedSlider" min="0.75" max="1.5" step="0.05" value="1.0">
+                      <span class="slider-max">1.5x</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Primary Generate Button -->
+            <div class="action-footer">
+              <button id="synthesizeBtn" class="primary-btn glow-btn">
+                <div class="btn-content">
+                  <svg id="synthIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span id="synthText">Sintesis Suara</span>
+                </div>
+                <div class="btn-loader hidden" id="synthLoader">
+                  <div class="spinner"></div>
+                  <span>Sedang Menghasilkan Audio...</span>
+                </div>
+                <div class="keyboard-hint">Ctrl + Enter</div>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Player & History -->
+          <div class="studio-card player-card">
+            
+            <!-- Audio Studio Player -->
+            <div class="player-container" id="playerContainer">
+              <div class="card-header">
+                <div class="title-with-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <h2>Studio Player & Visualizer</h2>
+                </div>
+                <div class="player-header-actions">
+                  <div id="audioMetaBadge" class="meta-tag hidden">LJSpeech · 16 kHz</div>
+                  <!-- Expand Player to full width -->
+                  <button id="expandPlayerBtn" class="icon-action-btn expand-btn" title="Perluas Player (E)">
+                    <svg id="expandIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    <svg id="compressIcon" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Canvas Waveform / Frequency Visualizer -->
+              <div class="visualizer-box">
+                <canvas id="waveformCanvas" width="600" height="140"></canvas>
+                <div class="canvas-overlay-idle" id="canvasIdleOverlay">
+                  <div class="idle-pulse-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                  </div>
+                  <p>Siap membuat audio. Tekan <strong>Sintesis Suara</strong> untuk memulai.</p>
+                </div>
+              </div>
+
+              <!-- Audio Timeline Scrubber -->
+              <div class="timeline-container">
+                <span class="time-display" id="currentTimeDisplay">00:00</span>
+                <div class="progress-bar-wrapper" id="progressBarWrapper">
+                  <div class="progress-bar" id="progressBar"></div>
+                  <div class="progress-thumb" id="progressThumb"></div>
+                </div>
+                <span class="time-display" id="totalDurationDisplay">00:00</span>
+              </div>
+
+              <!-- Player Controls Row -->
+              <div class="player-controls-row">
+                <div class="controls-left">
+                  <button id="playbackRateBtn" class="rate-toggle-btn" title="Kecepatan pemutaran audio">1.0x</button>
+                </div>
+
+                <div class="controls-center">
+                  <button id="replayBtn" class="control-btn" title="Ulangi dari awal" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                  </button>
+                  <button id="mainPlayBtn" class="control-btn play-main-btn" title="Putar / Jeda (Spasi)" disabled>
+                    <svg id="playIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg id="pauseIcon" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  </button>
+                  <button id="muteBtn" class="control-btn" title="Mute / Unmute">
+                    <svg id="volHighIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    <svg id="volMuteIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                  </button>
+                </div>
+
+                <div class="controls-right">
+                  <a id="downloadWavBtn" class="action-btn-secondary disabled" title="Unduh File WAV" download="speecht5_output.wav">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Unduh WAV
+                  </a>
+                </div>
+              </div>
+
+              <!-- Performance Stats Bar -->
+              <div class="stats-bar hidden" id="generationStatsBar">
+                <div class="stat-item">
+                  <span class="stat-label">Waktu Sintesis</span>
+                  <span class="stat-val" id="statGenTime">-</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-label">Durasi Audio</span>
+                  <span class="stat-val" id="statDuration">-</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-label">Sample Rate</span>
+                  <span class="stat-val">16,000 Hz</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-label">RTF (Real-Time Factor)</span>
+                  <span class="stat-val" id="statRtf">-</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Session History Container -->
+            <div class="history-container">
+              <div class="history-header">
+                <h3>Riwayat Generasi Sesi Ini</h3>
+                <button id="clearHistoryBtn" class="text-link-btn">Bersihkan</button>
+              </div>
+              <div class="history-list" id="historyList">
+                <div class="empty-history" id="emptyHistoryMsg">
+                  Belum ada audio yang dibuat pada sesi ini.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 2: MODEL INSIGHTS & TRAINING DASHBOARD -->
+      <section id="insightsTab" class="tab-pane hidden">
+        <div class="insights-container">
+          
+          <!-- Top Architecture Banner -->
+          <div class="model-spec-banner">
+            <div class="spec-col">
+              <span class="spec-label">Base Architecture</span>
+              <h4>SpeechT5 (Encoder-Decoder)</h4>
+              <p>Microsoft SpeechT5 dengan HiFi-GAN Vocoder</p>
+            </div>
+            <div class="spec-divider"></div>
+            <div class="spec-col">
+              <span class="spec-label">Fine-Tuning Dataset</span>
+              <h4>LJSpeech-1.1</h4>
+              <p>13,100 rekaman vokal profesional berbahasa Inggris</p>
+            </div>
+            <div class="spec-divider"></div>
+            <div class="spec-col">
+              <span class="spec-label">Langkah Pelatihan</span>
+              <h4>4,000 Steps (Final Checkpoint)</h4>
+              <p>Seq2SeqTrainer + Guided Attention Loss</p>
+            </div>
+            <div class="spec-divider"></div>
+            <div class="spec-col">
+              <span class="spec-label">Akurasi Pelafalan (Whisper)</span>
+              <h4 class="highlight-green">93.2% Pelafalan</h4>
+              <p>Word Error Rate (WER): 6.8%</p>
+            </div>
+          </div>
+
+          <!-- Training Plots & Visualizations Gallery -->
+          <div class="plots-section">
+            <div class="section-title-bar">
+              <h2>Visualisasi & Metrik Pelatihan Model</h2>
+              <p>Grafik empiris hasil eksperimen fine-tuning yang diekstrak langsung dari notebook pelatihan.</p>
+            </div>
+
+            <div class="gallery-grid" id="plotsGallery">
+              
+              <!-- Plot 1: Learning Curve -->
+              <div class="plot-card" data-img="/asset/kurvaPembelajaran.png" data-title="Kurva Pembelajaran (Loss Convergence)">
+                <div class="plot-img-wrapper">
+                  <img src="/asset/kurvaPembelajaran.png" alt="Kurva Pembelajaran Loss" loading="lazy">
+                  <div class="zoom-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    Perbesar
+                  </div>
+                </div>
+                <div class="plot-info">
+                  <h3>Kurva Pembelajaran (Loss Curve)</h3>
+                  <p>Penurunan nilai loss stabil sepanjang 4.000 steps menunjukkan model belajar mengonversi teks ke spektrogram dengan akurat.</p>
+                </div>
+              </div>
+
+              <!-- Plot 2: Mel-Spectrogram -->
+              <div class="plot-card" data-img="/asset/mel-spectrogram.png" data-title="Mel-Spectrogram Target vs Prediksi">
+                <div class="plot-img-wrapper">
+                  <img src="/asset/mel-spectrogram.png" alt="Mel-Spectrogram" loading="lazy">
+                  <div class="zoom-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    Perbesar
+                  </div>
+                </div>
+                <div class="plot-info">
+                  <h3>Mel-Spectrogram (80 Bins)</h3>
+                  <p>Visualisasi energi frekuensi audio mel-spectrogram yang dihasilkan decoder sebelum diolah oleh HiFi-GAN vocoder.</p>
+                </div>
+              </div>
+
+              <!-- Plot 3: Waveform -->
+              <div class="plot-card" data-img="/asset/wavefrom(amplitudo-volume-terhadap-waktu).png" data-title="Bentuk Gelombang Suara (Amplitudo vs Waktu)">
+                <div class="plot-img-wrapper">
+                  <img src="/asset/wavefrom(amplitudo-volume-terhadap-waktu).png" alt="Waveform Amplitudo vs Waktu" loading="lazy">
+                  <div class="zoom-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    Perbesar
+                  </div>
+                </div>
+                <div class="plot-info">
+                  <h3>Waveform (Amplitudo vs Waktu)</h3>
+                  <p>Representasi domain waktu sinyal audio digital sintetis pada frekuensi sampling 16,000 Hz.</p>
+                </div>
+              </div>
+
+              <!-- Plot 4: Dataset Distribution -->
+              <div class="plot-card" data-img="/asset/distribusi.png" data-title="Distribusi Dataset LJSpeech">
+                <div class="plot-img-wrapper">
+                  <img src="/asset/distribusi.png" alt="Distribusi Durasi LJSpeech" loading="lazy">
+                  <div class="zoom-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    Perbesar
+                  </div>
+                </div>
+                <div class="plot-info">
+                  <h3>Distribusi Dataset LJSpeech</h3>
+                  <p>Distribusi panjang kata dan durasi audio (1 hingga 10 detik) yang menjadi basis pelatihan model.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Deep-Dive Specifications Table -->
+          <div class="specs-table-card">
+            <h3>Spesifikasi Teknis & Hyperparameter Pelatihan</h3>
+            <div class="table-responsive">
+              <table class="specs-table">
+                <tbody>
+                  <tr>
+                    <td><strong>Model Path</strong></td>
+                    <td><code>/home/nizar/Documents/myCode/ai/tts/web/model_speecht5_ljspeech</code></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Arsitektur Model</strong></td>
+                    <td>SpeechT5ForTextToSpeech (768 Hidden, 12 Encoder Layers, 6 Decoder Layers)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Neural Vocoder</strong></td>
+                    <td>SpeechT5HifiGan (Sample Rate 16,000 Hz)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Speaker Embeddings</strong></td>
+                    <td>512-dimensi xvector / synthetic Gaussian seed embeddings</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Batch Size & Akumulasi</strong></td>
+                    <td>Batch Size 4 dengan 8 Gradient Accumulation Steps (Effective: 32)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Learning Rate & Scheduler</strong></td>
+                    <td>1e-5, Warmup 100 steps, AdamW Optimizer</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Presisi Numerik</strong></td>
+                    <td>Mixed Precision FP16 + Gradient Checkpointing</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal for Image Zooming -->
+    <div id="imageModal" class="modal-backdrop hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Judul Gambar</h3>
+          <button id="closeModalBtn" class="close-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <img id="modalImg" src="" alt="Zoomed Plot">
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden native audio element -->
+    <audio id="nativeAudio" preload="auto"></audio>
+
+    <!-- Footer -->
+    <footer class="studio-footer">
+      <div class="footer-left">
+        <span>SpeechT5 Neural TTS Studio &bull; Powered by PyTorch & FastAPI</span>
+      </div>
+      <div class="footer-right">
+        <span>Checkpoint 4000 &bull; 16 kHz WAV Output</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
