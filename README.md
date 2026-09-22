@@ -19,15 +19,44 @@ Aplikasi web interaktif untuk Text-to-Speech (TTS) menggunakan model neural **Sp
 - **Audio Processing**: `soundfile`
 - **Frontend**: HTML5, Vanilla JS, Vanilla CSS
 
-## 📂 Assets
+## 🧠 Tech Stack & Data Training (Fine-Tuning)
 
-Proyek ini menyertakan beberapa aset visual di dalam folder `asset/`:
-- `demo.gif` - Animasi demonstrasi cara penggunaan aplikasi web.
-- `tampilanWeb.png` - Tangkapan layar antarmuka utama SpeechT5 Studio.
-- `kurvaPembelajaran.png` - Grafik loss model selama proses pelatihan (fine-tuning).
-- `mel-spectrogram.png` - Contoh fitur akustik Mel-Spectrogram yang dihasilkan oleh model.
-- `wavefrom(amplitudo-volume-terhadap-waktu).png` - Visualisasi amplitudo audio keluaran terhadap waktu.
-- `distribusi.png` - Visualisasi distribusi durasi audio pada dataset pelatihan.
+Proyek ini tidak dibangun dari nol, melainkan melalui proses *Transfer Learning* dan *Fine-tuning* menggunakan teknologi berikut:
+
+- **Model Dasar (Base Model)**: `microsoft/speecht5_tts` (Speech-to-Text, Text-to-Speech, Voice Conversion).
+- **Dataset**: **LJSpeech Dataset**, berisi kumpulan rekaman suara tunggal berbahasa Inggris berkualitas tinggi (~24 jam rekaman).
+- **Framework ML**: `PyTorch` untuk perhitungan tensor dan `Transformers` dari Hugging Face untuk arsitektur model.
+- **Audio Processing (Training)**: `librosa` dan `torchaudio` untuk mengekstrak fitur *Mel-Spectrogram* dan mengubah audio ke format array matematis (16kHz).
+- **Optimizer**: `AdamW` yang efisien mengatasi fenomena *weight decay*.
+- **Hardware**: Pelatihan awal dapat diakselerasi menggunakan GPU CUDA (Google Colab / NVIDIA GPU lokal).
+
+## 📂 Visualisasi & Assets
+
+Berikut adalah beberapa hasil visualisasi yang kami peroleh dari proyek ini beserta penjelasannya:
+
+### 1. Demonstrasi Aplikasi
+![Demo Web](asset/demo.gif)
+*Animasi yang menunjukkan kelancaran antarmuka (UI) dari SpeechT5 Studio ketika menyintesis teks menjadi suara beserta animasi visualizer gelombang audio.*
+
+### 2. Tampilan Utama
+![Tampilan Web](asset/tampilanWeb.png)
+*Tangkapan layar resolusi tinggi yang menampilkan tema dark-mode dengan konsep glassmorphism, memberikan kesan premium dan modern.*
+
+### 3. Kurva Pembelajaran (Learning Curve)
+![Kurva Pembelajaran](asset/kurvaPembelajaran.png)
+*Grafik loss evaluasi (validation loss) maupun training loss selama proses fine-tuning model. Semakin menurun grafiknya, semakin baik model mempelajari karakteristik suara dataset.*
+
+### 4. Mel-Spectrogram
+![Mel Spectrogram](asset/mel-spectrogram.png)
+*Representasi visual dari spektrum frekuensi audio yang dihasilkan oleh SpeechT5 sebelum di-decode oleh vocoder HiFi-GAN. Visualisasi ini krusial untuk mengecek artikulasi fonem model.*
+
+### 5. Waveform (Amplitudo vs Waktu)
+![Waveform](asset/wavefrom(amplitudo-volume-terhadap-waktu).png)
+*Representasi matematis keluaran suara (amplitudo) terhadap waktu. Pola rapatan gelombang menandakan seberapa keras, pelan, atau panjang suara diucapkan.*
+
+### 6. Distribusi Dataset LJSpeech
+![Distribusi Dataset](asset/distribusi.png)
+*Diagram yang menunjukkan persebaran data durasi setiap sampel audio pada dataset LJSpeech, yang digunakan untuk menyeimbangkan proses batching saat training.*
 
 ## ⚙️ Persyaratan Sistem
 
