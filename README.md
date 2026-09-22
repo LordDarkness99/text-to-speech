@@ -2,8 +2,6 @@
 
 Aplikasi web interaktif untuk Text-to-Speech (TTS) menggunakan model neural **SpeechT5** yang telah di-*fine-tune* pada dataset **LJSpeech**, dikombinasikan dengan neural vocoder **HiFi-GAN**.
 
-![Tampilan Web](asset/tampilanWeb.png)
-
 ## 🚀 Fitur Utama
 
 - **Sintesis Audio Real-time**: Mengubah teks bahasa Inggris menjadi ucapan manusia dengan intonasi natural.
