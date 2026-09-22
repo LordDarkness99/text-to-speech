@@ -22,7 +22,7 @@ Aplikasi web interaktif untuk Text-to-Speech (TTS) menggunakan model neural **Sp
 Proyek ini tidak dibangun dari nol, melainkan melalui proses *Transfer Learning* dan *Fine-tuning* menggunakan teknologi berikut:
 
 - **Model Dasar (Base Model)**: `microsoft/speecht5_tts` (Speech-to-Text, Text-to-Speech, Voice Conversion).
-- **Dataset**: **LJSpeech Dataset**, berisi kumpulan rekaman suara tunggal berbahasa Inggris berkualitas tinggi (~24 jam rekaman).
+- **Dataset**: **[LJSpeech Dataset](https://www.kaggle.com/datasets/mathurinache/the-lj-speech-dataset)**, berisi kumpulan rekaman suara tunggal berbahasa Inggris berkualitas tinggi (~24 jam rekaman).
 - **Framework ML**: `PyTorch` untuk perhitungan tensor dan `Transformers` dari Hugging Face untuk arsitektur model.
 - **Audio Processing (Training)**: `librosa` dan `torchaudio` untuk mengekstrak fitur *Mel-Spectrogram* dan mengubah audio ke format array matematis (16kHz).
 - **Optimizer**: `AdamW` yang efisien mengatasi fenomena *weight decay*.
